@@ -27,8 +27,17 @@ class BuildListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Показываем только сборки текущего пользователя
-        return Build.objects.filter(user=self.request.user)
+        # Берем все сборки текущего пользователя
+        queryset = Build.objects.filter(user=self.request.user)
+        
+        # Получаем параметр ?name= из запроса
+        name_query = self.request.query_params.get('name')
+        if name_query:
+            # Фильтруем по частичному совпадению в имени сборки, регистр не важен
+            queryset = queryset.filter(name__icontains=name_query)
+        
+        return queryset
+
 
     def perform_create(self, serializer):
         # Автоматически присваиваем текущего пользователя

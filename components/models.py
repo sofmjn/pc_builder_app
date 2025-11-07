@@ -30,6 +30,11 @@ class Build(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'name'], name='unique_build_name_per_user')
+        ]
+
     def __str__(self):
         return f"{self.name} ({self.user.username})"
 
