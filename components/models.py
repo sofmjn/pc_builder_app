@@ -26,6 +26,7 @@ class Component(models.Model):
 class Build(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='builds')
     name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)  
     components = models.ManyToManyField(Component, related_name='builds')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
