@@ -124,7 +124,7 @@ graph TB
 
     MobileApp -->|HTTP запросы| API
     API -->|чтение и запись данных| DB
-    API -->|JSON ответы: категории, комплектующие, совместимость, поиск, сохраненные сборки| MobileApp
+    API -->|JSON ответы| MobileApp
 
 
 
