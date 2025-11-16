@@ -18,30 +18,39 @@ flowchart TD
 ## Class Diagram
 
 ```mermaid
+%%{init: {'theme': 'default'}}%%
 classDiagram
-    class User {
-        +string id
-        +string username
-        +string email
+    class User{
+        +id: int
+        +username: str
+        +email: str
+        +password: str
+        +first_name: str
+        +last_name: str
     }
 
-    class Build {
-        +string id
-        +string userId
-        +string name
-        +List~Component~ components
+    class Component{
+        +id: int
+        +name: str
+        +type: str
+        +brand: str
+        +price: Decimal
+        +compatibility: str
+        +link: str
     }
 
-    class Component {
-        +string id
-        +string type
-        +string brand
-        +string model
-        +map specs
+    class Build{
+        +id: int
+        +name: str
+        +description: str
+        +created_at: datetime
+        +updated_at: datetime
+        +total_price(): Decimal
     }
 
-    User --> Build : "владеет"
-    Build --> Component : "содержит"
+    User "1" --> "0..*" Build : owns
+    Build "0..*" --> "0..*" Component : contains
+
 ```
 
 ## Sequence Diagram — Добавление компонента
