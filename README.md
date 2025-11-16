@@ -103,9 +103,10 @@ sequenceDiagram
 
 ## C1 — Контекст (System Context)
 ```mermaid
+    flowchart TD
     User[Пользователь] --> MobileApp[Мобильное приложение]
     MobileApp --> Backend[Backend Django API]
-    Backend --> Database[(SQLite)]
+    Backend --> Database[(PostgreSQL / SQLite)]
 ```
 
 ## C2 — Контейнеры
