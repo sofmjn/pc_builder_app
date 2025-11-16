@@ -2,33 +2,28 @@
 
 ## UML Use Case
 ```mermaid
-%%{init: {'theme': 'default'}}%%
-usecaseDiagram
-    actor User
-    actor System as Backend
-    actor App as MobileApp
+flowchart TD
+    User[Пользователь] --> Register[Регистрация]
+    User --> Login[Вход]
+    User --> ViewHome[Главный экран]
+    User --> ViewComponents[Каталог компонентов]
+    User --> Filter[Фильтрация компонентов]
+    User --> CreateBuild[Создание сборки]
+    User --> EditBuild[Редактирование сборки]
+    User --> DeleteBuild[Удаление сборки]
+    User --> AddComponent[Добавление компонента в сборку]
+    User --> RemoveComponent[Удаление компонента из сборки]
 
-    User --> (Register)
-    User --> (Login)
-    User --> (View Home Screen)
-    User --> (View Components Catalog)
-    User --> (Filter Components)
-    User --> (Create Build)
-    User --> (Edit Build)
-    User --> (Delete Build)
-    User --> (Add Component to Build)
-    User --> (Remove Component from Build)
-    
-    App --> Backend
-    (Register) --> Backend
-    (Login) --> Backend
-    (View Components Catalog) --> Backend
-    (Filter Components) --> Backend
-    (Create Build) --> Backend
-    (Edit Build) --> Backend
-    (Delete Build) --> Backend
-    (Add Component to Build) --> Backend
-    (Remove Component from Build) --> Backend
+    MobileApp[Мобильное приложение] --> Backend[Backend Django API]
+    Register --> Backend
+    Login --> Backend
+    ViewComponents --> Backend
+    Filter --> Backend
+    CreateBuild --> Backend
+    EditBuild --> Backend
+    DeleteBuild --> Backend
+    AddComponent --> Backend
+    RemoveComponent --> Backend
 
 ```
 ## Class Diagram
