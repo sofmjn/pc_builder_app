@@ -1,7 +1,6 @@
-# Architecture Documentation
+# Архитектура приложения «PC Builder Mobile App»
 
-## Use Case Diagram
-
+## UML Use Case
 ```mermaid
 %%{init: {'theme': 'default'}}%%
 usecaseDiagram
@@ -31,7 +30,6 @@ usecaseDiagram
     (Add Component to Build) --> Backend
     (Remove Component from Build) --> Backend
 
-```
 
 ## Class Diagram
 
