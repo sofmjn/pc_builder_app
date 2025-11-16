@@ -120,13 +120,13 @@ sequenceDiagram
 %%{init: {'theme': 'default'}}%%
 graph TB
     MobileApp[Flutter App]
-    API[Backend Django REST]
-    DB[(SQLite)]
-    Scraper[Scraper / Parser Components]
+    API[Django REST API]
+    DB[(Database)]
 
-    MobileApp -->|REST API| API
-    API --> DB
-    API --> Scraper
+    MobileApp -->|HTTP запросы (async/await)| API
+    API -->|чтение и запись данных| DB
+    API -->|JSON ответы:\nкатегории,\nкомплектующие,\nсовместимость,\nпоиск,\nсохранённые сборки| MobileApp
+
 
 
 ```
