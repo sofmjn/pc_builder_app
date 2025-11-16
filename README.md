@@ -3,16 +3,34 @@
 ## Use Case Diagram
 
 ```mermaid
-flowchart TD
-    User([Пользователь]) --> |Создаёт сборку| UC_CreateBuild
-    User --> |Добавляет компоненты| UC_AddComponent
-    User --> |Удаляет компоненты| UC_RemoveComponent
-    User --> |Просматривает каталог| UC_ViewCatalog
-    User --> |Фильтрует комплектующие| UC_Filter
-    User --> |Проверяет совместимость| UC_Compatibility
+%%{init: {'theme': 'default'}}%%
+usecaseDiagram
+    actor User
+    actor System as Backend
+    actor App as MobileApp
 
-    UC_CreateBuild --> UC_Compatibility
-    UC_AddComponent --> UC_Compatibility
+    User --> (Register)
+    User --> (Login)
+    User --> (View Home Screen)
+    User --> (View Components Catalog)
+    User --> (Filter Components)
+    User --> (Create Build)
+    User --> (Edit Build)
+    User --> (Delete Build)
+    User --> (Add Component to Build)
+    User --> (Remove Component from Build)
+    
+    App --> Backend
+    (Register) --> Backend
+    (Login) --> Backend
+    (View Components Catalog) --> Backend
+    (Filter Components) --> Backend
+    (Create Build) --> Backend
+    (Edit Build) --> Backend
+    (Delete Build) --> Backend
+    (Add Component to Build) --> Backend
+    (Remove Component from Build) --> Backend
+
 ```
 
 ## Class Diagram
@@ -46,10 +64,23 @@ classDiagram
         +created_at: datetime
         +updated_at: datetime
         +total_price(): Decimal
+        +components_by_type(): dict
     }
+
+    class HomeScreen{}
+    class LoginScreen{}
+    class ComponentsScreen{}
+    class CreateBuildPage{}
+    class EditBuildPage{}
 
     User "1" --> "0..*" Build : owns
     Build "0..*" --> "0..*" Component : contains
+    HomeScreen --> Build
+    HomeScreen --> Component
+    ComponentsScreen --> Component
+    CreateBuildPage --> Build
+    EditBuildPage --> Build
+
 
 ```
 
@@ -75,4 +106,73 @@ sequenceDiagram
         B-->>F: { status: "error", reason: "Несовместимо" }
         F-->>U: Ошибка совместимости
     end
+```
+
+## C1 — Контекст (System Context)
+```mermaid
+%%{init: {'theme': 'default'}}%%
+graph TB
+    User[Пользователь]
+    MobileApp[Mobile App (Flutter)]
+    Backend[Backend (Django REST API)]
+    DB[(PostgreSQL)]
+    External[Внешние сервисы: DNS, PCPartPicker]
+
+    User --> MobileApp
+    MobileApp --> Backend
+    Backend --> DB
+    Backend --> External
+```
+
+## C2 — Контейнеры
+```mermaid
+%%{init: {'theme': 'default'}}%%
+graph TB
+    MobileApp[Flutter App]
+    API[Backend Django REST]
+    DB[(PostgreSQL)]
+    Scraper[Scraper / Parser Components]
+
+    MobileApp -->|REST API| API
+    API --> DB
+    API --> Scraper
+
+
+```
+
+## C3 — Компоненты Backend
+```mermaid
+%%{init: {'theme': 'default'}}%%
+graph TD
+    AuthService[Authentication Service]
+    UserService[User Profile Service]
+    BuildService[Build Management Service]
+    ComponentService[Component Catalog Service]
+    CompatibilityService[Compatibility Checker]
+
+    API --> AuthService
+    API --> UserService
+    API --> BuildService
+    API --> ComponentService
+    API --> CompatibilityService
+
+```
+
+## BPMN (Пример сценария “Создание сборки”)
+```mermaid
+%%{init: {'theme': 'default'}}%%
+flowchart TD
+    Start((Start))
+    Login[Login Screen]
+    Home[Home Screen]
+    CreateBuild[Create Build Screen]
+    SelectComponents[Select Components]
+    AddComponent[Add Component to Build]
+    CheckCompatibility[Check Compatibility]
+    SaveBuild[Save Build]
+    End((End))
+
+    Start --> Login --> Home --> CreateBuild --> SelectComponents --> AddComponent --> CheckCompatibility --> SaveBuild --> End
+
+
 ```
