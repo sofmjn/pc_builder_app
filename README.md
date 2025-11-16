@@ -117,15 +117,14 @@ sequenceDiagram
 
 ## C2 — Контейнеры
 ```mermaid
-%%{init: {'theme': 'default'}}%%
 graph TB
-    MobileApp[Flutter App]
+    MobileApp[Flutter приложение]
     API[Django REST API]
-    DB[(Database)]
+    DB[(База данных)]
 
-    MobileApp -->|HTTP запросы (async/await)| API
+    MobileApp -->|HTTP запросы| API
     API -->|чтение и запись данных| DB
-    API -->|JSON ответы:\nкатегории,\nкомплектующие,\nсовместимость,\nпоиск,\nсохранённые сборки| MobileApp
+    API -->|JSON ответы: категории, комплектующие, совместимость, поиск, сохраненные сборки| MobileApp
 
 
 
