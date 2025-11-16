@@ -149,19 +149,18 @@ flowchart TD
 
 ## BPMN (Пример сценария “Создание сборки”)
 ```mermaid
-%%{init: {'theme': 'default'}}%%
 flowchart TD
-    Start((Start))
-    Login[Login Screen]
-    Home[Home Screen]
-    CreateBuild[Create Build Screen]
-    SelectComponents[Select Components]
-    AddComponent[Add Component to Build]
-    CheckCompatibility[Check Compatibility]
-    SaveBuild[Save Build]
-    End((End))
-
-    Start --> Login --> Home --> CreateBuild --> SelectComponents --> AddComponent --> CheckCompatibility --> SaveBuild --> End
+    Start([Начало]) --> Login[Вход/Регистрация]
+    Login --> Browse[Просмотр каталога компонентов]
+    Browse --> Filter[Фильтрация компонентов]
+    Filter --> SelectComponent[Выбор компонента]
+    SelectComponent --> AddToBuild[Добавление в сборку]
+    AddToBuild --> ReviewBuild[Просмотр сборки]
+    ReviewBuild --> EditBuild[Редактирование сборки]
+    EditBuild --> RemoveComponent[Удаление компонента из сборки]
+    RemoveComponent --> SaveBuild[Сохранение сборки]
+    SaveBuild --> DeleteBuild[Удаление сборки]
+    DeleteBuild --> End([Конец])
 
 
 ```
