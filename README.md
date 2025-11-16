@@ -103,18 +103,9 @@ sequenceDiagram
 
 ## C1 — Контекст (System Context)
 ```mermaid
-%%{init: {'theme': 'default'}}%%
-graph TB
-    User[Пользователь]
-    MobileApp[Mobile App (Flutter)]
-    Backend[Backend (Django REST API)]
-    DB[(PostgreSQL)]
-    External[Внешние сервисы: DNS, PCPartPicker]
-
-    User --> MobileApp
-    MobileApp --> Backend
-    Backend --> DB
-    Backend --> External
+    User[Пользователь] --> MobileApp[Мобильное приложение]
+    MobileApp --> Backend[Backend Django API]
+    Backend --> Database[(SQLite)]
 ```
 
 ## C2 — Контейнеры
