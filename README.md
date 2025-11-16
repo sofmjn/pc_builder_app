@@ -106,7 +106,7 @@ sequenceDiagram
     flowchart TD
     User[Пользователь] --> MobileApp[Мобильное приложение]
     MobileApp --> Backend[Backend Django API]
-    Backend --> Database[(PostgreSQL / SQLite)]
+    Backend --> Database[(SQLite)]
 ```
 
 ## C2 — Контейнеры
@@ -115,7 +115,7 @@ sequenceDiagram
 graph TB
     MobileApp[Flutter App]
     API[Backend Django REST]
-    DB[(PostgreSQL)]
+    DB[(SQLite)]
     Scraper[Scraper / Parser Components]
 
     MobileApp -->|REST API| API
