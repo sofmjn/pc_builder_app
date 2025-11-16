@@ -127,20 +127,18 @@ graph TB
 
 ## C3 — Компоненты Backend
 ```mermaid
-%%{init: {'theme': 'default'}}%%
-graph TD
-    AuthService[Authentication Service]
-    UserService[User Profile Service]
-    BuildService[Build Management Service]
-    ComponentService[Component Catalog Service]
-    CompatibilityService[Compatibility Checker]
+flowchart TD
+    ComponentService --> ComponentModel[Модель Component]
+    ComponentService --> ComponentSerializer[Сериализатор ComponentSerializer]
+    ComponentService --> ComponentView[Views: ComponentListView, ComponentDetailView]
+    
+    BuildService --> BuildModel[Модель Build]
+    BuildService --> BuildSerializer[BuildSerializer]
+    BuildService --> BuildView[Views: BuildListCreateView, BuildDetailView, add/remove_component]
 
-    API --> AuthService
-    API --> UserService
-    API --> BuildService
-    API --> ComponentService
-    API --> CompatibilityService
-
+    AuthService --> UserModel[Модель User]
+    AuthService --> RegisterSerializer
+    AuthService --> LoginAPIView
 ```
 
 ## BPMN (Пример сценария “Создание сборки”)
