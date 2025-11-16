@@ -81,24 +81,30 @@ classDiagram
 
 ```mermaid
 sequenceDiagram
-    participant U as User
-    participant F as Frontend
-    participant B as Backend
-    participant DB as Database
+    User->>MobileApp: Открывает приложение
+    MobileApp->>Backend: GET /api/users/me/
+    Backend-->>MobileApp: Возвращает данные пользователя
 
-    U->>F: выбирает компонент
-    F->>B: POST /builds/{id}/add-component
-    B->>DB: запрос данных компонента
-    DB-->>B: данные компонента
+    User->>MobileApp: Создать сборку
+    MobileApp->>Backend: POST /api/components/builds/
+    Backend-->>MobileApp: Возвращает новую сборку
 
-    B->>B: Проверка совместимости
-    alt Совместимо
-        B-->>F: { status: "ok" }
-        F-->>U: Компонент добавлен
-    else Не совместимо
-        B-->>F: { status: "error", reason: "Несовместимо" }
-        F-->>U: Ошибка совместимости
-    end
+    User->>MobileApp: Добавить компонент
+    MobileApp->>Backend: POST /api/components/builds/{id}/add_component/
+    Backend-->>MobileApp: Обновлённая сборка
+
+    User->>MobileApp: Редактировать сборку
+    MobileApp->>Backend: PUT /api/components/builds/{id}/
+    Backend-->>MobileApp: Обновлённая сборка
+
+    User->>MobileApp: Удалить компонент
+    MobileApp->>Backend: POST /api/components/builds/{id}/remove_component/
+    Backend-->>MobileApp: Обновлённая сборка
+
+    User->>MobileApp: Удалить сборку
+    MobileApp->>Backend: DELETE /api/components/builds/{id}/
+    Backend-->>MobileApp: Подтверждение удаления
+
 ```
 
 ## C1 — Контекст (System Context)
