@@ -31,7 +31,9 @@ flowchart TD
 ```mermaid
 %%{init: {'theme': 'default'}}%%
 classDiagram
-    class User{
+
+    %% ========== USER & BUILD ==========
+    class User {
         +id: int
         +username: str
         +email: str
@@ -40,39 +42,93 @@ classDiagram
         +last_name: str
     }
 
-    class Component{
-        +id: int
-        +name: str
-        +type: str
-        +brand: str
-        +price: Decimal
-        +compatibility: str
-        +link: str
-    }
-
-    class Build{
+    class Build {
         +id: int
         +name: str
         +description: str
         +created_at: datetime
         +updated_at: datetime
         +total_price(): Decimal
-        +components_by_type(): dict
+        +get_components(): dict
     }
 
-    class HomeScreen{}
-    class LoginScreen{}
-    class ComponentsScreen{}
-    class CreateBuildPage{}
-    class EditBuildPage{}
-
     User "1" --> "0..*" Build : owns
-    Build "0..*" --> "0..*" Component : contains
-    HomeScreen --> Build
-    HomeScreen --> Component
-    ComponentsScreen --> Component
-    CreateBuildPage --> Build
-    EditBuildPage --> Build
+    Build "1" --> "0..*" Component : contains
+
+
+    %% ========== BASE COMPONENT ==========
+    class Component {
+        +id: int
+        +name: str
+        +type: str  <<cpu/gpu/motherboard/...>>
+        +price: Decimal
+        +vendor: str
+    }
+
+
+    %% ========== SUBMODELS ==========
+    class CPU {
+        +socket: str
+        +tdp: int
+        +chipset_support: list[str]
+    }
+
+    class Motherboard {
+        +socket: str
+        +chipset: str
+        +ram_type: str
+        +max_ram_freq: int
+        +form_factor: str
+    }
+
+    class RAM {
+        +ram_type: str
+        +frequency: int
+        +capacity_gb: int
+    }
+
+    class GPU {
+        +length_mm: int
+        +tdp: int
+        +pcie_version: str
+    }
+
+    class PSU {
+        +wattage: int
+        +efficiency: str
+    }
+
+    class Case {
+        +max_gpu_length: int
+        +motherboard_support: list[str]
+    }
+
+
+    %% RELATIONS ONE-TO-ONE
+    Component "1" --> "0..1" CPU
+    Component "1" --> "0..1" Motherboard
+    Component "1" --> "0..1" RAM
+    Component "1" --> "0..1" GPU
+    Component "1" --> "0..1" PSU
+    Component "1" --> "0..1" Case
+
+
+    %% ========== COMPATIBILITY SERVICE ==========
+    class CompatibilityChecker {
+        +check_cpu_mobo(cpu, mobo)
+        +check_ram_mobo(ram, mobo)
+        +check_gpu_case(gpu, case)
+        +check_psu_power(cpu, gpu, psu)
+        +check_build(cpu, gpu, ram, mobo, psu, case): list
+    }
+
+    CompatibilityChecker --> CPU
+    CompatibilityChecker --> Motherboard
+    CompatibilityChecker --> RAM
+    CompatibilityChecker --> GPU
+    CompatibilityChecker --> PSU
+    CompatibilityChecker --> Case
+
 
 
 ```
