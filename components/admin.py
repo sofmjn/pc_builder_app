@@ -1,12 +1,21 @@
 from django.contrib import admin
 from .models import Component, Build
+from .models import CPU, Motherboard, RAM, GPU, PSU, Case
+
+admin.site.register(CPU)
+admin.site.register(Motherboard)
+admin.site.register(RAM)
+admin.site.register(GPU)
+admin.site.register(PSU)
+admin.site.register(Case)
+
 
 @admin.register(Component)
 
 class ComponentAdmin(admin.ModelAdmin):
-    list_display = ('name', 'type', 'brand', 'price')
-    search_fields = ('name', 'brand', 'type')
-    list_filter = ('type', 'brand')
+    list_display = ('name', 'type', 'vendor', 'price')
+    search_fields = ('name', 'vendor', 'type')
+    list_filter = ('type', 'vendor')
 
 @admin.register(Build)
 class BuildAdmin(admin.ModelAdmin):

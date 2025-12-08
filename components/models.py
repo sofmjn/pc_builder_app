@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Component(models.Model):
-    COMPONENT_TYPES = [
+
+COMPONENT_TYPES = [
         ('cpu', 'Processor'),
         ('gpu', 'Graphics Card'),
         ('motherboard', 'Motherboard'),
@@ -12,16 +12,53 @@ class Component(models.Model):
         ('case', 'Case'),
         ('cooler', 'Cooling System'),
     ]
-
-    name = models.CharField(max_length=200)
+class Component(models.Model):
+    name = models.CharField(max_length=255)
     type = models.CharField(max_length=20, choices=COMPONENT_TYPES)
-    brand = models.CharField(max_length=100, blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    compatibility = models.TextField(blank=True)  # позже можно заменить на связи между моделями
-    link = models.URLField(blank=True)  # ссылка на DNS или другой магазин
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    vendor = models.CharField(max_length=120, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} ({self.get_type_display()})"
+        return f"{self.name} ({self.type})"
+
+class CPU(models.Model):
+    component = models.OneToOneField(Component, on_delete=models.CASCADE, related_name="cpu")
+    socket = models.CharField(max_length=50)
+    tdp = models.IntegerField()  # тепловыделение в Вт
+    chipset_support = models.JSONField(default=list) 
+
+class Motherboard(models.Model):
+    component = models.OneToOneField(Component, on_delete=models.CASCADE, related_name="motherboard")
+    socket = models.CharField(max_length=50)
+    chipset = models.CharField(max_length=50)
+    ram_type = models.CharField(max_length=20)  # DDR4/DDR5
+    max_ram_freq = models.IntegerField()
+    form_factor = models.CharField(max_length=20)  # ATX/mATX/ITX
+
+class RAM(models.Model):
+    component = models.OneToOneField(Component, on_delete=models.CASCADE, related_name="ram")
+    ram_type = models.CharField(max_length=20)  # DDR4/DDR5
+    frequency = models.IntegerField()
+    capacity_gb = models.IntegerField()
+
+class GPU(models.Model):
+    component = models.OneToOneField(Component, on_delete=models.CASCADE, related_name="gpu")
+    length_mm = models.IntegerField()
+    tdp = models.IntegerField()
+    pcie_version = models.CharField(max_length=10, default="4.0")
+
+class PSU(models.Model):
+    component = models.OneToOneField(Component, on_delete=models.CASCADE, related_name="psu")
+    wattage = models.IntegerField()
+    efficiency = models.CharField(max_length=10, null=True, blank=True)
+
+class Case(models.Model):
+    component = models.OneToOneField(Component, on_delete=models.CASCADE, related_name="case")
+    max_gpu_length = models.IntegerField()
+    motherboard_support = models.JSONField(default=list)
+
+
+# === BUILD ===
 
 class Build(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='builds')
