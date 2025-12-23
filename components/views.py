@@ -10,9 +10,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from .pagination import ComponentPagination
 from .services import CompatibilityChecker
 import random
 from rest_framework.generics import ListAPIView
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
 
 
 
@@ -21,6 +24,7 @@ class ComponentListView(generics.ListAPIView):
     queryset = Component.objects.all()
     serializer_class = ComponentSerializer
     permission_classes = [AllowAny]
+    pagination_class = ComponentPagination
 
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ComponentFilter
@@ -34,12 +38,18 @@ class ComponentDetailView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
 class CheckCompatibilityView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        comp_ids = request.data.get("components", [])
+        comp_ids = request.data.get("components", []) or []
+        comps = (Component.objects
+                 .filter(id__in=comp_ids)
+                 .select_related("cpu", "gpu", "ram", "motherboard", "psu", "case"))
 
-        comps = Component.objects.filter(id__in=comp_ids)
-        typed = {c.type: getattr(c, c.type) for c in comps if hasattr(c, c.type)}
+        serialized = ComponentSerializer(comps, many=True).data
+        typed = {}
+        for item in serialized:
+            typed[item["type"]] = item  # если 2 одинаковых типа Ч последний перезапишет
 
         checker = CompatibilityChecker()
         result = checker.check_build(
@@ -48,10 +58,102 @@ class CheckCompatibilityView(APIView):
             ram=typed.get("ram"),
             mobo=typed.get("motherboard"),
             psu=typed.get("psu"),
-            case=typed.get("case")
+            case=typed.get("case"),
         )
 
-        return Response({"compatibility": result})
+        formatted = [{"ok": ok, "message": msg} for (ok, msg) in result]
+        return Response({"compatibility": formatted})
+
+class CandidatesPagination(PageNumberPagination):
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+class ComponentCandidatesView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ComponentSerializer
+    pagination_class = CandidatesPagination
+
+    def post(self, request):
+        target_type = request.data.get("target_type")
+        selected_ids = request.data.get("selected_component_ids", []) or []
+        compatibility = bool(request.data.get("compatibility", True))
+
+        search = (request.data.get("search") or "").strip()
+        vendors = request.data.get("vendor")  # строка или список
+        price_min = request.data.get("price_min")
+        price_max = request.data.get("price_max")
+
+        if not target_type:
+            return Response({"detail": "target_type is required"}, status=400)
+
+        qs = (Component.objects
+              .filter(type=target_type)
+              .select_related("cpu", "gpu", "ram", "motherboard", "psu", "case"))
+
+        # ---- обычные фильтры ----
+        if search:
+            qs = qs.filter(Q(name__icontains=search) | Q(vendor__icontains=search))
+
+        if vendors:
+            if isinstance(vendors, str):
+                vendors = [vendors]
+            qs = qs.filter(vendor__in=vendors)
+
+        if price_min not in (None, ""):
+            qs = qs.filter(price__gte=price_min)
+        if price_max not in (None, ""):
+            qs = qs.filter(price__lte=price_max)
+
+        # ---- фильтр совместимости ----
+        if compatibility and selected_ids:
+            selected = (Component.objects
+                        .filter(id__in=selected_ids)
+                        .select_related("cpu", "gpu", "ram", "motherboard", "psu", "case"))
+
+            cpu = next((c.cpu for c in selected if c.type == "cpu" and hasattr(c, "cpu")), None)
+            gpu = next((c.gpu for c in selected if c.type == "gpu" and hasattr(c, "gpu")), None)
+            ram = next((c.ram for c in selected if c.type == "ram" and hasattr(c, "ram")), None)
+            mobo = next((c.motherboard for c in selected if c.type == "motherboard" and hasattr(c, "motherboard")), None)
+            psu = next((c.psu for c in selected if c.type == "psu" and hasattr(c, "psu")), None)
+            case = next((c.case for c in selected if c.type == "case" and hasattr(c, "case")), None)
+
+            # MOTHERBOARD под CPU
+            if target_type == "motherboard" and cpu:
+                qs = qs.filter(
+                    motherboard__socket=cpu.socket,
+                    motherboard__chipset__in=cpu.chipset_support,
+                )
+
+            # CPU под MOTHERBOARD
+            elif target_type == "cpu" and mobo:
+                qs = qs.filter(
+                    cpu__socket=mobo.socket,
+                    cpu__chipset_support__contains=[mobo.chipset],  # JSONField list contains
+                )
+
+            # RAM под MOTHERBOARD
+            elif target_type == "ram" and mobo:
+                qs = qs.filter(
+                    ram__ram_type=mobo.ram_type,
+                    ram__frequency__lte=mobo.max_ram_freq,
+                )
+
+            # CASE под GPU
+            elif target_type == "case" and gpu:
+                qs = qs.filter(case__max_gpu_length__gte=gpu.length_mm)
+
+            # PSU под CPU+GPU
+            elif target_type == "psu" and cpu and gpu:
+                required = int((cpu.tdp + gpu.tdp) * 1.4)
+                qs = qs.filter(psu__wattage__gte=required)
+
+            # (опционально) GPU под CASE Ч если хочешь в обе стороны
+            elif target_type == "gpu" and case:
+                qs = qs.filter(gpu__length_mm__lte=case.max_gpu_length)
+
+        page = self.paginate_queryset(qs.order_by("id"))
+        ser = self.get_serializer(page, many=True)
+        return self.get_paginated_response(ser.data)
 
 class BuildListCreateView(generics.ListCreateAPIView):
     serializer_class = BuildSerializer
